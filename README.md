@@ -10,7 +10,7 @@
 
 
 # How to support ?
-Press start button .
+Press star button .
 
 
 
@@ -20,7 +20,7 @@ Press start button .
 
 ---
 #  about  
-Aurelion.info
+https://Aurelion.info
 #
 
 ### forked from https://github.com/Ratamorph/TextureChannelPackerTool
