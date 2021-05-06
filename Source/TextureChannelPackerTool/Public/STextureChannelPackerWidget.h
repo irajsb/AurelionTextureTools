@@ -16,6 +16,8 @@ class TEXTURECHANNELPACKERTOOL_API STextureChannelPackerWidget : public SCompoun
 public:
 	SLATE_BEGIN_ARGS(STextureChannelPackerWidget)
 	{}
+
+	SLATE_ATTRIBUTE( TArray<UTexture2D*>, Textures )
 	SLATE_END_ARGS()
 
 	/** Constructs this widget with InArgs */
@@ -25,7 +27,8 @@ public:
 
 	bool CanPackTextureChannels();
 	void CreatePackedTexture(const FString& filePath);
-
+	bool IsPowerOfTwo(int num);
+	FText GetErrorMessage();
 private:
 	/** Creates and sets up the settings view element*/
 	void CreateSettingsView();
@@ -33,10 +36,9 @@ private:
 	bool ValidTargetTextureSize();
 	bool TexturesArePropperSizeForTarget();
 	bool TextureSlotsAsigned();
-	bool IsPowerOfTwo(int num);
-	FText GetErrorMessage();
 
-private:
+	
+
 	UTextureChannelPackerSettingsObject* TextureChannelPackerSettings;
 	TSharedPtr<IDetailsView> SettingsView;
 };

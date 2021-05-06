@@ -37,11 +37,11 @@ public class TextureChannelPackerTool : ModuleRules
 				"Projects",
 				"InputCore",
 				"UnrealEd",
-				"LevelEditor",
+				"ToolMenus",
 				"CoreUObject",
 				"Engine",
 				"Slate",
-				"SlateCore",
+				"SlateCore","UMG","EditorWidgets",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

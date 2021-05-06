@@ -9,7 +9,7 @@
 #include "Widgets/Text/STextBlock.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 #include "Widgets/Layout/SScrollBox.h"
-
+#include "ContentBrowserExtensions.h"
 #include "STextureChannelPackerWidget.h"
 
 static const FName TextureChannelPackerToolTabName("TextureChannelPackerTool");
@@ -31,28 +31,16 @@ void FTextureChannelPackerToolModule::StartupModule()
 		FTextureChannelPackerToolCommands::Get().OpenPluginWindow,
 		FExecuteAction::CreateRaw(this, &FTextureChannelPackerToolModule::PluginButtonClicked),
 		FCanExecuteAction());
-		
-	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
 	
-	{
-		TSharedPtr<FExtender> MenuExtender = MakeShareable(new FExtender());
-		MenuExtender->AddMenuExtension("WindowLayout", EExtensionHook::After, PluginCommands, FMenuExtensionDelegate::CreateRaw(this, &FTextureChannelPackerToolModule::AddMenuExtension));
+		FPackerContentBrowserExtensions::InstallHooks();
 
-		LevelEditorModule.GetMenuExtensibilityManager()->AddExtender(MenuExtender);
-	}
-
-	/*
-	{
-		TSharedPtr<FExtender> ToolbarExtender = MakeShareable(new FExtender);
-		ToolbarExtender->AddToolBarExtension("Settings", EExtensionHook::After, PluginCommands, FToolBarExtensionDelegate::CreateRaw(this, &FTextureChannelPackerToolModule::AddToolbarExtension));
-		
-		LevelEditorModule.GetToolBarExtensibilityManager()->AddExtender(ToolbarExtender);
-	}
-	*/
 	
-	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(TextureChannelPackerToolTabName, FOnSpawnTab::CreateRaw(this, &FTextureChannelPackerToolModule::OnSpawnPluginTab))
-		.SetDisplayName(LOCTEXT("FTextureChannelPackerToolTabTitle", "TextureChannelPackerTool"))
-		.SetMenuType(ETabSpawnerMenuType::Hidden);
+	
+	FGlobalTabmanager::Get()->RegisterTabSpawner(TextureChannelPackerToolTabName, FOnSpawnTab::CreateRaw(this, &FTextureChannelPackerToolModule::OnSpawnPluginTab))
+		.SetDisplayName(LOCTEXT("FTextureChannelPackerToolTabTitle", "Texture Channel Packer Tool"))
+		.SetMenuType(ETabSpawnerMenuType::Disabled);
+	
+	;
 }
 
 void FTextureChannelPackerToolModule::ShutdownModule()
@@ -64,47 +52,44 @@ void FTextureChannelPackerToolModule::ShutdownModule()
 	FTextureChannelPackerToolCommands::Unregister();
 
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(TextureChannelPackerToolTabName);
+	FPackerContentBrowserExtensions::RemoveHooks();
 }
 
 TSharedRef<SDockTab> FTextureChannelPackerToolModule::OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs)
 {
-	FText WidgetText = FText::Format(
-		LOCTEXT("WindowWidgetText", "Add code to {0} in {1} to override this window's contents"),
-		FText::FromString(TEXT("FTextureChannelPackerToolModule::OnSpawnPluginTab")),
-		FText::FromString(TEXT("TextureChannelPackerTool.cpp"))
-		);
+	
 
 	// Construct toolbar widget
 	TSharedRef<STextureChannelPackerWidget> TextureChannelPackerWidget =
-			SNew(STextureChannelPackerWidget);
+			SNew(STextureChannelPackerWidget).Textures(Texture2Ds);
+			Texture2Ds.Empty();
+	
+	TSharedRef<SDockTab>DockTab= SNew(SDockTab)
+		.TabRole(ETabRole::MajorTab)
+		.ContentPadding(FMargin(2))
+	
+	[
+      
+       		SNew(SScrollBox)
+            			+SScrollBox::Slot()
+            			[
+            				// Put your tab content here!
+            				TextureChannelPackerWidget
+            			]
+   ];
 
-	return SNew(SDockTab)
-		.TabRole(ETabRole::NomadTab)
-		[
-			SNew(SScrollBox)
-			+SScrollBox::Slot()
-			[
-				// Put your tab content here!
-				TextureChannelPackerWidget
-			]
-		];
-
-/*
-	SNew(SBox)
-			.HAlign(HAlign_Center)
-			.VAlign(VAlign_Center)
-			[
-				SNew(STextBlock)
-				.Text(WidgetText)
-			]
-
-*/
-
+	return  DockTab;
 }
 
 void FTextureChannelPackerToolModule::PluginButtonClicked()
 {
+
+#if ENGINE_MINOR_VERSION >25
+	FGlobalTabmanager::Get()->TryInvokeTab(TextureChannelPackerToolTabName);
+#else
 	FGlobalTabmanager::Get()->InvokeTab(TextureChannelPackerToolTabName);
+#endif
+	
 }
 
 void FTextureChannelPackerToolModule::AddMenuExtension(FMenuBuilder& Builder)

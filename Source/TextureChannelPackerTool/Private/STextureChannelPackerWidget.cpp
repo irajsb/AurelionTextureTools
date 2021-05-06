@@ -26,46 +26,90 @@ void STextureChannelPackerWidget::Construct(const FArguments& InArgs)
 {
     CreateSettingsView();
 
+    TArray<UTexture2D*>Texture2Ds=InArgs._Textures.Get();
     TextureChannelPackerSettings = UTextureChannelPackerSettingsObject::Get();
+    if(Texture2Ds.Num()!=0)
+        TextureChannelPackerSettings->Settings.rChannelTargetSlot=Texture2Ds.Pop();
+    if(Texture2Ds.Num()!=0)
+        TextureChannelPackerSettings->Settings.gChannelTargetSlot=Texture2Ds.Pop();
+    if(Texture2Ds.Num()!=0)
+        TextureChannelPackerSettings->Settings.bChannelTargetSlot=Texture2Ds.Pop();
+    if(Texture2Ds.Num()!=0)
+        TextureChannelPackerSettings->Settings.aChannelTargetSlot=Texture2Ds.Pop();
+    Texture2Ds.Empty();
     SettingsView->SetObject(TextureChannelPackerSettings);
 
+   
+
+   
 
 
+    TSharedRef<SButton>Button= SNew(SButton)
+            
+
+            .Text_Lambda([this]() -> FText
+            {
+               
+                return GetErrorMessage();
+            })
+            .OnClicked(this, &STextureChannelPackerWidget::OnPackTextureChannelsClicked)
+            .IsEnabled_Lambda([this]() -> bool { return this->CanPackTextureChannels();});
+    
+   
+   
+ 
+  Button->SetPadding(FMargin(40,20));     
 	ChildSlot
 	[
-        SNew(SVerticalBox)
+	    SNew(SHorizontalBox)
+	    +SHorizontalBox::Slot()
+	    .HAlign(HAlign_Fill)
+         .VAlign(VAlign_Fill)
+         [
+	    SNew(SVerticalBox)
 
-        + SVerticalBox::Slot()
-        .AutoHeight()
-        .HAlign(HAlign_Left)
+   + SVerticalBox::Slot()
+   .AutoHeight()
+   .HAlign(HAlign_Fill)
+   .VAlign(VAlign_Fill)
+   .Padding(0, 0, 0, 0)
+   [
+       SettingsView->AsShared()
+   ]
+
+   
+	        ]
+       
+        +SHorizontalBox ::Slot()
+        .AutoWidth()
+        .VAlign(VAlign_Center)
+        .HAlign(HAlign_Center)
         .Padding(0, 0, 0, 0)
         [
-            SettingsView->AsShared()
-        ]
-
-        +SVerticalBox::Slot()
-        .AutoHeight()
-        .HAlign(HAlign_Left)
-        .Padding(0, 0, 0, 0)
-        [
-            SNew(STextBlock)
-            .Text_Lambda([this]() -> FText { return GetErrorMessage();})
-        ]
-
-        +SVerticalBox::Slot()
-        .AutoHeight()
-        .VAlign(VAlign_Bottom)
-        .HAlign(HAlign_Right)
-        .Padding(0, 0, 0, 0)
-        [
-            SNew(SButton)
-            .Text(LOCTEXT("PackChannels", "Pack Texture Channels"))
-            .OnClicked(this, &STextureChannelPackerWidget::OnPackTextureChannelsClicked)
-            .IsEnabled_Lambda([this]() -> bool { return this->CanPackTextureChannels();})
+           
+            Button
         ]
 	];
 
 
+}
+
+
+FText STextureChannelPackerWidget::GetErrorMessage()
+{    FText WidgetHelpText = LOCTEXT("WidgetReadyText", "Ready to package");
+
+    if(!ValidTargetTextureSize())
+    {
+        WidgetHelpText = LOCTEXT("WidgetBatTargetSizeText", "Target texture size must be power of two ");
+    }
+    else if(!TexturesArePropperSizeForTarget())
+    {
+        WidgetHelpText = LOCTEXT("WidgetNullTextureInSlotErrorText", "You must assign a texture to each slot");
+    }
+    else if(!TexturesArePropperSizeForTarget()) {
+        WidgetHelpText = LOCTEXT("WidgetTextureSizeErrorText", "Source textures must be equal size than target texture");
+    }
+    return WidgetHelpText;
 }
 
 FReply STextureChannelPackerWidget::OnPackTextureChannelsClicked()
@@ -125,6 +169,13 @@ bool STextureChannelPackerWidget::CanPackTextureChannels()
     }
     return false;
 }
+
+bool STextureChannelPackerWidget::ValidTargetTextureSize()
+{
+   
+    return IsPowerOfTwo(TextureChannelPackerSettings->Settings.targetTextureSize);
+    
+}
 bool STextureChannelPackerWidget::IsPowerOfTwo(int num)
 {
     int n =num;
@@ -141,44 +192,23 @@ bool STextureChannelPackerWidget::IsPowerOfTwo(int num)
     }
     if(n == 0 || n != 1)
     {
-      return false;
+        return false;
     }
     return false;
-}
-
-FText STextureChannelPackerWidget::GetErrorMessage()
-{    FText WidgetHelpText = LOCTEXT("WidgetReadyText", "Ready to package");
-
-    if(!ValidTargetTextureSize())
-    {
-        WidgetHelpText = LOCTEXT("WidgetBatTargetSizeText", "Target texture size must be power of two ");
-    }
-    else if(!TexturesArePropperSizeForTarget())
-    {
-        WidgetHelpText = LOCTEXT("WidgetNullTextureInSlotErrorText", "You must assign a texture to each slot");
-    }
-    else if(!TexturesArePropperSizeForTarget()) {
-        WidgetHelpText = LOCTEXT("WidgetTextureSizeErrorText", "Source textures must be equal size than target texture");
-    }
-    return WidgetHelpText;
-}
-
-bool STextureChannelPackerWidget::ValidTargetTextureSize()
-{
-   
-   return IsPowerOfTwo(TextureChannelPackerSettings->Settings.targetTextureSize);
-    
 }
 
 bool STextureChannelPackerWidget::TextureSlotsAsigned()
 {
+    
+   
     if(TextureChannelPackerSettings != nullptr)
     {
         
-                return true;
+        return true;
     }
     return false;
 }
+
 
 bool STextureChannelPackerWidget::TexturesArePropperSizeForTarget()
 {
@@ -198,14 +228,13 @@ bool STextureChannelPackerWidget::TexturesArePropperSizeForTarget()
 
         for(UTexture2D* Channel : Channels)
         {
-        if(    Channel->PlatformData->SizeX!=Channel->PlatformData->SizeY||!IsPowerOfTwo(Channel->PlatformData->SizeX))
-            Result=false;
+            if(    Channel->PlatformData->SizeX!=Channel->PlatformData->SizeY||!IsPowerOfTwo(Channel->PlatformData->SizeX))
+                Result=false;
         }
        
     }
     return Result;
 }
-
 void STextureChannelPackerWidget::CreatePackedTexture(const FString& filePath)
 {
     if(CanPackTextureChannels())

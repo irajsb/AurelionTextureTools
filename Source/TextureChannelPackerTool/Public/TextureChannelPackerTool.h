@@ -25,8 +25,10 @@ private:
 	void AddMenuExtension(FMenuBuilder& Builder);
 
 	TSharedRef<class SDockTab> OnSpawnPluginTab(const class FSpawnTabArgs& SpawnTabArgs);
-
-private:
+//for when multiple textures are selected in CB so we can pass them to window
+	
+public:
+	TArray<UTexture2D*>Texture2Ds;
 	TSharedPtr<class FUICommandList> PluginCommands;
 
 };
