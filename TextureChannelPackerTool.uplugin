@@ -1,0 +1,23 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "TextureChannelPackerTool",
+	"Description": "Packs data into texture channels",
+	"Category": "Other",
+	"CreatedBy": "Luis Correa",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "TextureChannelPackerTool",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
+		}
+	]
+}
