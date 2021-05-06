@@ -9,7 +9,8 @@
   ![Image](.github/Capture.png)
 
 
-
+# How to support ?
+Press start button .
 
 
 
